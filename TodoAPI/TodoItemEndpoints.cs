@@ -78,6 +78,24 @@ public static class TodoItemEndpoints
         .WithName("GetTodoItemsByUserId")
         .WithOpenApi();
 
+        group.MapPut("/{id}/toggle-status", async Task<Results<Ok<TodoItem>, NotFound>> (int id, TodoAPIContext db) =>
+        {
+            var todoItem = await db.TodoItem.FindAsync(id);
+
+            if (todoItem == null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            todoItem.Status = !todoItem.Status;
+
+            await db.SaveChangesAsync();
+
+            return TypedResults.Ok(todoItem);
+        })
+        .WithName("ToggleTodoItemStatus")
+        .WithOpenApi();
+
     }
 
 }
