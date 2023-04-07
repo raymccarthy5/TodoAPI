@@ -2,6 +2,6 @@
 {
     public class SignInResponse
     {
-        bool isVerified { get; set; }
+        public bool isVerified { get; set; }
     }
 }

@@ -64,5 +64,26 @@ public static class UserModelEndpoints
         })
         .WithName("DeleteUserModel")
         .WithOpenApi();
+
+        group.MapPost("/signin", async (SignInRequest signInRequest, TodoAPIContext db) =>
+        {
+            var user = await db.UserModel.FirstOrDefaultAsync(u => u.Username == signInRequest.Username && u.Password == signInRequest.Password);
+
+            if (user != null)
+            {
+                var response = new SignInResponse { isVerified = true };
+                return TypedResults.Ok(response);
+            }
+            else
+            {
+                var response = new SignInResponse { isVerified = false };
+                return TypedResults.Ok(response);
+            }
+        })
+        .WithName("SignIn")
+        .WithOpenApi();
+
     }
+
+
 }
