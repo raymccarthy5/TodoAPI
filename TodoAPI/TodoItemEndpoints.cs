@@ -66,5 +66,18 @@ public static class TodoItemEndpoints
         })
         .WithName("DeleteTodoItem")
         .WithOpenApi();
+
+        group.MapGet("/user/{userId}", async Task<Results<Ok<List<TodoItem>>, NotFound>> (int userId, TodoAPIContext db) =>
+        {
+            var todoItems = await db.TodoItem.AsNoTracking()
+                .Where(model => model.UserId == userId)
+                .ToListAsync();
+
+            return todoItems.Count > 0 ? TypedResults.Ok(todoItems) : TypedResults.NotFound();
+        })
+        .WithName("GetTodoItemsByUserId")
+        .WithOpenApi();
+
     }
+
 }
