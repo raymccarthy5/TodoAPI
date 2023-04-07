@@ -71,7 +71,7 @@ public static class UserModelEndpoints
 
             if (user != null)
             {
-                var response = new SignInResponse { isVerified = true };
+                var response = new SignInResponse { isVerified = true, Id = user.Id };
                 return TypedResults.Ok(response);
             }
             else
