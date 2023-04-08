@@ -29,18 +29,17 @@ public static class UserModelEndpoints
         .WithName("GetUserModelById")
         .WithOpenApi();
 
-        group.MapPut("/{id}", async Task<Results<Ok, NotFound>> (int id, UserModel userModel, TodoAPIContext db) =>
+        group.MapPut("/{id}", async Task<Results<Ok<UserModel>, NotFound>> (int id, UserModel userModel, TodoAPIContext db) =>
         {
             var affected = await db.UserModel
                 .Where(model => model.Id == id)
                 .ExecuteUpdateAsync(setters => setters
-                  .SetProperty(m => m.Id, userModel.Id)
                   .SetProperty(m => m.Username, userModel.Username)
                   .SetProperty(m => m.Password, userModel.Password)
                   .SetProperty(m => m.Email, userModel.Email)
                 );
 
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
+            return affected == 1 ? TypedResults.Ok(userModel) : TypedResults.NotFound();
         })
         .WithName("UpdateUserModel")
         .WithOpenApi();

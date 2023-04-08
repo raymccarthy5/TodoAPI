@@ -29,12 +29,11 @@ public static class TodoItemEndpoints
         .WithName("GetTodoItemById")
         .WithOpenApi();
 
-        group.MapPut("/{id}", async Task<Results<Ok, NotFound>> (int id, TodoItem todoItem, TodoAPIContext db) =>
+        group.MapPut("/{id}", async Task<Results<Ok<TodoItem>, NotFound>> (int id, TodoItem todoItem, TodoAPIContext db) =>
         {
             var affected = await db.TodoItem
                 .Where(model => model.Id == id)
                 .ExecuteUpdateAsync(setters => setters
-                  .SetProperty(m => m.Id, todoItem.Id)
                   .SetProperty(m => m.Title, todoItem.Title)
                   .SetProperty(m => m.Description, todoItem.Description)
                   .SetProperty(m => m.DueDate, todoItem.DueDate)
@@ -42,7 +41,7 @@ public static class TodoItemEndpoints
                   .SetProperty(m => m.UserId, todoItem.UserId)
                 );
 
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
+            return affected == 1 ? TypedResults.Ok(todoItem) : TypedResults.NotFound();
         })
         .WithName("UpdateTodoItem")
         .WithOpenApi();
