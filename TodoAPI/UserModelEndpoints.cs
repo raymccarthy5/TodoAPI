@@ -1,8 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OpenApi;
+using System.Security.Cryptography;
 using TodoAPI.Data;
 using TodoAPI.Model;
+using System.Text;
+
 namespace TodoAPI;
 
 public static class UserModelEndpoints
@@ -46,9 +49,20 @@ public static class UserModelEndpoints
 
         group.MapPost("/", async (UserModel userModel, TodoAPIContext db) =>
         {
+
+            if (userModel.Password == null)
+            {
+                throw new ArgumentNullException(nameof(userModel.Password), "Password cannot be null");
+            }
+
+            using var sha256 = SHA256.Create();
+            var hashedPassword = Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(userModel.Password)));
+
+            userModel.Password = hashedPassword;
             db.UserModel.Add(userModel);
             await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/UserModel/{userModel.Id}",userModel);
+
+            return TypedResults.Created($"/api/UserModel/{userModel.Id}", userModel);
         })
         .WithName("CreateUserModel")
         .WithOpenApi();
@@ -66,7 +80,16 @@ public static class UserModelEndpoints
 
         group.MapPost("/signin", async (SignInRequest signInRequest, TodoAPIContext db) =>
         {
-            var user = await db.UserModel.FirstOrDefaultAsync(u => u.Username == signInRequest.Username && u.Password == signInRequest.Password);
+
+            if (signInRequest.Password == null)
+            {
+                throw new ArgumentNullException(nameof(signInRequest.Password), "Password cannot be null");
+            }
+
+            using var sha256 = SHA256.Create();
+            var hashedPassword = Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(signInRequest.Password)));
+
+            var user = await db.UserModel.FirstOrDefaultAsync(u => u.Username == signInRequest.Username && u.Password == hashedPassword);
 
             if (user != null)
             {
